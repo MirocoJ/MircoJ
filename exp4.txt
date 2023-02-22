@@ -1,0 +1,48 @@
+class Human   {
+    public  String name;
+    public  void setName(String name) {
+    this.name = name;
+}
+
+    public  String getName() {
+    return name;
+}
+
+}
+
+interface School  {
+     void enroll();
+    void attendClass();
+}
+class Student extends Human implements School {
+    public  int studentID;
+    constructor setStudentID(int studentID) {
+    this.studentID = studentID
+}
+    public  int getStudentID() {
+    return studentID;
+}
+
+    public  void enroll() {
+    
+}
+
+    public  void attendClass() {
+    
+}
+
+}
+
+class Main   {
+    public static void main(String[] args) {
+    Student student1 = new Student();
+    student1.setName("John");
+    student1.setStudentID(12345);
+    System.out.println("Name: " + student1.getName());
+    System.out.println("Student ID: " + student1.getStudentID());
+    student1.enroll();
+    student1.attendClass();
+}
+
+}
+

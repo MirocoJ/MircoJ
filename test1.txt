@@ -1,0 +1,21 @@
+interface Human extends Animals, Alien {
+    static void talk(string words);
+    int weight();
+}
+
+class Student extends Parent implements Human {
+    protect static int height = 170;
+    private int weight = 120;
+
+    constructor Student(int height, int age, int weight){
+        this.height = height;
+        this.weight = weight;
+        this.age    = age;
+    }
+    private static void talk(string words) {
+        print("I'm a student at Tufts");
+    }
+    string first_name(string s){
+        return first(s);
+    }
+}
