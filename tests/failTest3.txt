@@ -1,0 +1,20 @@
+/********************func*******************/
+int function(interface TestInterface{}){
+  class;
+}
+
+int function(){
+  interface;
+}
+
+int function(){
+ class;
+}
+
+function(){
+
+}
+
+void function{
+
+}

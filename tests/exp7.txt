@@ -1,0 +1,138 @@
+1;
+2.1;
+true;
+"hello world";
+Dog;
+1 + 2;
+1 - 2;
+1 * 2;
+1 / 2;
+-2;
+int c = 0 + Dog.weight();
+Dog.weight;
+Dog.bark();
+Dog a;
+Cat b = new Cat();
+print(x, y, z);
+if (x < 2)
+{
+    x = x + 2;
+    return x + 4;
+} else {
+    int y = x + 3;
+    return y;
+}
+    
+for (int i = 0 ; i < 10 ; i = i + 1) {
+    print(i);
+    print(i + 1);
+    break;
+}
+while (i < 10) {
+    k = k + 3;
+    continue;
+}
+int a = 1;
+a = 2;
+int sum(int x, int y) {
+    print("hello");
+    return x + y;
+}
+
+string toBig(Animal x) {
+    return allCaps(x);
+}
+
+interface Human extends Animals, Alien {
+    static void talk(string words);
+    int weight();
+}
+class Student extends Parent implements Human {
+    protect static int height = 170;
+    private  int weight = 120;
+    constructor Student(int height, int age, int weight) {
+    this.height = height;
+    this.weight = weight;
+    this.age = age;
+}
+    private static void talk(string words) {
+    print("I'm a student at Tufts");
+}
+
+      string first_name(string s) {
+    return first(s);
+}
+
+}
+
+Student allen = new Student(10, 10, 10);
+allen = new Student(1, 0, 1);
+allen.talk("hello");
+int[] a = b;
+int[] a = [2, 3, 4];
+bool[] b = [true, false, true];
+int[] a = [2, 3, 4] > 3;
+int[] a = [[2, 3, 4], [3]];
+a[1];
+c = a[1] + a[2];
+int[][] a = [[1, 2, 3], [2, 3, 4], [4]];
+dog[][] a;
+class Student   {
+    
+}
+
+int partition(int[] arr, int low, int high) {
+    int pivot = arr[high];
+    int i = (low - 1);
+    for (int j = low ; j < high ; j = j + 1) {
+    if (arr[j] < pivot) {
+    i = i + 1;
+    int temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+}
+}
+    int temp = arr[i + 1];
+    arr[i + 1] = arr[high];
+    arr[high] = temp;
+    return i + 1;
+}
+
+void sort(int[] arr, int low, int high) {
+    if (low < high) {
+    int pi = partition(arr, low, high);
+    sort(arr, low, pi - 1);
+    sort(arr, pi + 1, high);
+}
+}
+
+void rainbowSort(int[] arr) {
+    int n = arr.length;
+    int red = 0;
+    int green = 0;
+    int blue = n - 1;
+    while (green <= blue) {
+    if (arr[green] == 0)
+{
+    int temp = arr[green];
+    arr[green] = arr[red];
+    arr[red] = temp;
+    red = red + 1;
+    green = green + 1;
+} else if (arr[green] == 1)
+{
+    green = green + 1;
+} else if (arr[green] == 2) {
+    int temp = arr[green];
+    arr[green] = arr[blue];
+    arr[blue] = temp;
+    blue = blue - 1;
+}
+    
+    
+}
+}
+
+int a = null;
+a = doh[1][2];
+int[][] obj = new obj.setDim(3, 4);

@@ -68,6 +68,7 @@ rule token = parse
 | "class" { CLASS }
 | "interface" { INTERFACE }
 | "constructor" {CONSTRUCTOR }
+| "super"   { SUPER }
 | "new" { NEW }
 | "implements" { IMPLEMENTS }
 | "extends" { EXTENDS }

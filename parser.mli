@@ -51,6 +51,8 @@ type token =
   | STATIC
   | THIS
   | NULL
+  | SETDIMENSION
+  | SUPER
   | LITERAL of (int)
   | BLIT of (bool)
   | ID of (string)

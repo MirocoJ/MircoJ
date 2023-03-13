@@ -1,0 +1,31 @@
+/********************class*******************/
+class TestClass extends while(true){
+    
+}
+
+class TestClass{
+    public public a;
+    static static a;
+    public private a;
+}
+
+class TestClass{
+  public public void static function(){
+  }
+}
+
+class TestClass{
+  interface TestInterface {
+  }
+}
+
+class TestClass{
+  abababa gg;  
+}
+
+class TestClass{
+  while(true){}
+}
+
+Class TestClass{
+}

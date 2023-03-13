@@ -1,0 +1,27 @@
+/********************interface*******************/
+interface TestInterface {
+  int a = 1;
+}
+
+interface TestInterface {
+  void fun(){
+  }
+}
+
+interface TestInterface{
+  for(int i = 0; i < 10; i++){
+    break;
+  }
+}
+
+interface TestInterface{
+  private;
+}
+
+interface TestInterface{
+  private int a = c;
+}
+
+interface class TestInterface{
+  protected int a;
+}

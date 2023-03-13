@@ -6,7 +6,7 @@ open Ast
 
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL DOUBLE VOID STRING BREAK CONTINUE INTLIST BOOLLIST DOUBLELIST STRINGLIST
-%token CLASS INTERFACE NEW IMPLEMENTS EXTENDS IS PUBLIC PRIVATE PROTECT STATIC THIS NULL
+%token CLASS INTERFACE NEW IMPLEMENTS EXTENDS IS PUBLIC PRIVATE PROTECT STATIC THIS NULL SETDIMENSION SUPER
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID DLIT STRINGLIT
@@ -111,19 +111,11 @@ class_stmt_list:
     | class_stmt_list class_stmt {$2 :: $1}
 
 class_stmt:
-      CONSTRUCTOR typ LPAREN formals_opt RPAREN LBRACE construct_stmt_list RBRACE
+      CONSTRUCTOR typ LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
        {ConstructorDef ($2, List.rev $4, List.rev $7)}
     | accControl fieldMod fundef {MethodDef ($1, $2, $3)}
     | accControl fieldMod typ ID def_stmt SEMI {FieldDef ($1, $2, $3, $4, $5)}
 
-
-
-construct_stmt_list:
-    /* nothing */ {[]}
-    | construct_stmt_list construct_stmt {$2 :: $1}
-
-construct_stmt:
-    THIS DOT ID ASSIGN expr SEMI {($3, $5)}
 
 accControl:
       PUBLIC  {Some Public}
@@ -134,24 +126,27 @@ accControl:
 fieldMod:
       STATIC  {Some Static}
     | {None}
-square_list:
+empty_square_list:
       LSQUARE RSQUARE   {["[]"]}
-    | square_list LSQUARE RSQUARE {"[]" :: $1}
+    | empty_square_list LSQUARE RSQUARE {"[]" :: $1}
     
 list_type:
-    INT square_list %prec NOT{IntList $2}
-  | BOOL square_list %prec NOT{BoolList $2}
-  | DOUBLE square_list %prec NOT{DoubleList $2}
-  | STRING square_list %prec NOT{StringList $2}
-  | ID square_list %prec CLASSNAME{ObjectList ($1, $2)}
+    INT empty_square_list %prec NOT{IntList $2}
+  | BOOL empty_square_list  %prec NOT{BoolList $2}
+  | DOUBLE empty_square_list  %prec NOT{DoubleList $2}
+  | STRING empty_square_list  %prec NOT{StringList $2}
+  | ID empty_square_list %prec CLASSNAME{ObjectList ($1, $2)}
 
-typ: 
+single_type:
     INT  {Int}
   | BOOL {Bool}
   | DOUBLE {Double}
   | VOID {Void}
   | STRING {String}
   | ID %prec CLASSNAME{Object $1}
+
+typ: 
+    single_type {$1}
   | list_type {$1}
 
   
@@ -177,18 +172,42 @@ expr_opt:
     /* nothing */ { Noexpr }
   | expr          { $1 }
 
-expr:
-     THIS             {This}
-  |  LITERAL          { Literal($1)            }
-  | DLIT	         { Dliteral($1)           }
-  | BLIT             { BoolLit($1)            }
-  | STRINGLIT        { StringLiteral($1)      }
-  | NULL             { Null }
+/* expr that can be used as an index */
+index_expr:
+    LITERAL          { Literal($1)            }
   | ID     %prec NOELSE          { Id($1)                 }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
   | expr TIMES  expr { Binop($1, Mult,  $3)   }
   | expr DIVIDE expr { Binop($1, Div,   $3)   }
+  | expr DOT expr    { Access ($1, $3)       }
+  // | ID LPAREN args_opt RPAREN { Call($1, $3)  }
+  | funcall {$1}
+  | MINUS expr %prec NOT { Unop(Neg, $2)      }
+
+// index_expr_list:
+//     index_expr    {[$1]}
+//   | index_expr_list COMMA index_expr {$3 :: $1}
+
+funcall:
+   ID LPAREN args_opt RPAREN { Call($1, $3)  }
+
+
+/* expr about define and assign */
+def_asn_expr:
+    ID ASSIGN expr   { Asn($1, $3)            }
+  // | ID ASSIGN NEW expr %prec NOT { ObjAsn($1, $4)}
+  // | typ ID ASSIGN NEW expr %prec OR { ObjDefAsn($1, $2, $5) }
+  | typ ID def_stmt { DefAsn($1, $2, $3)}
+
+expr:
+    THIS             {This}
+  | SUPER            {Super}
+  | index_expr       {$1}
+  | DLIT	           { Dliteral($1)           }
+  | BLIT             { BoolLit($1)            }
+  | STRINGLIT        { StringLiteral($1)      }
+  | NULL             { Null }
   | expr EQ     expr { Binop($1, Equal, $3)   }
   | expr NEQ    expr { Binop($1, Neq,   $3)   }
   | expr LT     expr { Binop($1, Less,  $3)   }
@@ -197,23 +216,21 @@ expr:
   | expr GEQ    expr { Binop($1, Geq,   $3)   }
   | expr AND    expr { Binop($1, And,   $3)   }
   | expr OR     expr { Binop($1, Or,    $3)   }
-  | MINUS expr %prec NOT { Unop(Neg, $2)      }
+
   | NOT expr         { Unop(Not, $2)          }
-  // | ID ID           %prec ELSE {ObjDef($1, $2)}
-  // | ID square_list ID  {ObjListDef ($1, $2, $3)}
-  | expr DOT expr    {Access ($1, $3)       }
-  | ID ASSIGN expr   { Asn($1, $3)            }
-  | ID ASSIGN NEW expr %prec NOT { ObjAsn($1, $4)}
-  | ID LPAREN args_opt RPAREN { Call($1, $3)  }
-  | typ ID ASSIGN NEW expr %prec OR { ObjDefAsn($1, $2, $5) }
-  // | ID DOT ID LPAREN args_opt RPAREN %prec NOT{ObjMethod ($1, $3, $5)}
-//   | typ ID           %prec DEF          {PreDef($1, $2)}
-  | typ ID def_stmt  %prec ASSIGN { PreDefAsn($1, $2, $3)}
-  | LPAREN expr RPAREN { $2                   }
+  | def_asn_expr     { $1 }
+  | LPAREN expr RPAREN {ParenExp $2                   }
   | controlFlow       {ControlFlow($1)}
+  | NEW funcall         { NewExpr($2) }
   | LSQUARE expr_list_opt RSQUARE {ListExpr ($2)}
-  | ID LSQUARE expr RSQUARE def_stmt{Indexing($1, $3, $5)}
-  
+  | ID square_list def_stmt {Indexing($1, List.rev $2, $3)}
+  // | SETDIMENSION LPAREN index_expr_list RPAREN {SetDim (List.rev $3)}
+
+
+square_list: 
+   LSQUARE index_expr RSQUARE   {[$2]}
+  | square_list LSQUARE index_expr RSQUARE {$3 :: $1}
+
 expr_list_opt:
     expr_list {Some $1}
     | {None}
@@ -222,6 +239,7 @@ expr_list:
       expr  {[$1]}
     | expr_list COMMA expr {$1 @ [$3]}
 
+/* optional define statement */
 def_stmt:
     | ASSIGN expr {Some $2}
     | {None}
@@ -234,4 +252,5 @@ args_opt:
 args_list:
     expr                    { [$1] }
   | args_list COMMA expr { $3 :: $1 }
+
 

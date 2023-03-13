@@ -1,0 +1,20 @@
+To compile the compiler, follow the following steps:
+1. In terminal, run: make clean
+2. In terminal, run: make
+
+To run the compiler:
+In terminal, run: ./o < yourFileName.txt
+
+To run the test script：
+In terminal, run: ./run_o.sh
+
+Syntax still needed to add to our compiler: 
+We plan to add numpy like operations, for instance, concate(), append(), 
+slice()..and many others.
+
+Contacts
+Zichen(Dennis) Yang: zyang13@tufts.edu
+Chenxuan Liu:cliu26@tufts.edu
+Wei Sheng: Wei.Sheng@tufts.edu
+Weishi Ding: wding01@tufts.edu 
+

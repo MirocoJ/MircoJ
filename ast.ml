@@ -24,21 +24,26 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | ObjListDef of string * string list * string
   | Access of expr * expr
   | ObjMethod of string * string * expr list
-  | ObjDef of typ * string
-  | PreDefAsn of typ * string * expr option
-  | ObjDefAsn of typ * string * expr
+  | DefAsn of typ * string *  expr option
   | Asn of string * expr
-  | ObjAsn of string * expr
   | Call of string * expr list
   | ControlFlow of controlFlow
   | ListExpr of expr list option
-  | Indexing of string * expr * expr option
+  | Indexing of string * expr list * expr option
+  | ParenExp of expr
+  | NewExpr of expr
   | Null
   | This
+  | Super
   | Noexpr
+  (* | SetDim of expr list *)
+  (* | PreDefAsn of typ * string * expr option *)
+  (* | ObjDefAsn of typ * string * expr *)
+  (* | ObjDef of typ * string *)
+  (* | ObjListDef of string * string list * string *)
+  (* | ObjAsn of string * expr *)
 
 type stmt =
     Block of stmt list
@@ -47,6 +52,7 @@ type stmt =
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
+  | NoStmt
 
 type fundef = 
     {
@@ -57,7 +63,7 @@ type fundef =
     }
 
 type classStmt =  
-    ConstructorDef of typ * (typ * string)list * (string * expr) list
+    ConstructorDef of typ * (typ * string)list * stmt list
   | FieldDef of accControl option * fieldModifier option* typ * string * expr option
   | MethodDef of accControl option * fieldModifier option * fundef
       
@@ -94,7 +100,6 @@ type programComp =
 type program = programComp list
 
 (* Unparser function *)
-
 let string_of_op = function
     Add -> "+"
   | Sub -> "-"
@@ -142,27 +147,33 @@ let rec string_of_expr = function
   | Access(e1, e2) -> string_of_expr e1 ^ "." ^ string_of_expr e2
   | ObjMethod(name, meth, el) -> name ^ "." ^ meth ^ "(" ^  String.concat ", " (List.map string_of_expr el) ^ ")"
   (* int a = 1 *)
-  | PreDefAsn(t, n, e) -> 
+  (* | PreDefAsn(t, n, e) -> 
     (match e with
       Some value -> string_of_type t ^ " " ^ n ^ " = " ^ string_of_expr value
-    | None -> string_of_type t ^ " " ^ n)
+    | None -> string_of_type t ^ " " ^ n) *)
   (* Dog a *)
-  | ObjDef(t, n) -> string_of_type t ^ " " ^ n
+  (* | ObjDef(t, n) -> string_of_type t ^ " " ^ n *)
   (* Dog a =  new Dog() *)
-  | ObjDefAsn(t, n, e) -> string_of_type t ^ " " ^ n ^ " = new " ^ string_of_expr e
+  (* | ObjDefAsn(t, n, e) -> string_of_type t ^ " " ^ n ^ " = new " ^ string_of_expr e *)
   | Asn(n, e) -> n ^ " = " ^ string_of_expr e
-  | ObjAsn(n, e) -> n ^ " = " ^ string_of_expr e
+  (* | ObjAsn(n, e) -> n ^ " = new " ^ string_of_expr e *)
   | Call(n, el) -> n ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | ControlFlow(Break) -> "break"
   | ControlFlow(Continue) -> "continue"
   | ListExpr(el) ->
     (match el with Some lis -> "[" ^ String.concat ", " (List.map string_of_expr lis) ^ "]"
     | None -> "[]")
-  | Indexing(id, idx, exp) -> id ^ "[" ^ string_of_expr idx ^ "]" ^ (match exp with Some e -> " = " ^ string_of_expr e
-                                                                                    | None -> "")
-  | ObjListDef(classname, sql, varname) -> classname ^ String.concat "" sql ^ " " ^ varname
+  | Indexing(id, idx, exp) -> id ^ String.concat "" (List.map (function s -> "[" ^ string_of_expr s ^ "]") idx)
+    ^ (match exp with Some e -> " = " ^ string_of_expr e
+                        | None -> "")
+  (* | ObjListDef(classname, sql, varname) -> classname ^ String.concat "" sql ^ " " ^ varname *)
+  | ParenExp e -> "(" ^ string_of_expr e ^ ")"
+  (* | SetDim (es) -> "setDim(" ^ String.concat ", " (List.map string_of_expr es) ^ ")" *)
+  | NewExpr (e) -> "new " ^ string_of_expr e
+  | DefAsn (ty, id, e) -> string_of_type ty ^ " " ^ id ^ (match e with Some e' -> " = " ^ string_of_expr e' | None -> "")
   | This -> "this"
   | Null -> "null"
+  | Super -> "super"
   | Noexpr -> ""
 
 
@@ -178,6 +189,7 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+  | NoStmt -> ""
 
 
 let string_of_fundef (fd : fundef)= 
@@ -190,16 +202,16 @@ let string_of_ac = function
     Some Public -> "public"
   | Some Private -> "private"
   | Some Protect -> "protect"
-  | None -> "public"
+  | None -> ""
 
 let string_of_fm = function
   | Some Static -> "static"
   | None -> ""
 
 let string_of_classStmt = function
-      ConstructorDef(s, bind1, bind2) -> "constructor " ^ string_of_type s ^ "(" ^
+      ConstructorDef(s, bind1, st_list) -> "constructor " ^ string_of_type s ^ "(" ^
       (String.concat ", " (List.map (function (t, s) -> string_of_type t ^ " " ^ s) bind1)) ^ ") {\n    " ^
-      (String.concat ";\n    " (List.map (function (s, e) -> "this." ^ s ^ " = " ^ string_of_expr e) bind2)) ^ "\n}"
+      String.concat "\n" (List.map string_of_stmt st_list) ^ ";\n}"
     | FieldDef(ac, fm, t, s, e) -> 
       (match e with
       | Some exp -> string_of_ac ac ^ " " ^ string_of_fm fm ^ " " ^ string_of_type t ^ " " ^ s ^ " = " ^ string_of_expr exp ^ ";"

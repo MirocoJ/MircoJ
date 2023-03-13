@@ -1,0 +1,10 @@
+/********************var*******************/
+int a[];
+string s = “abc “” abd ”;
+string s = “  .’!@#$%^&^*(){}’ ’><>?~~++_+ ”
+double c
+
+class a;
+interface a;
+while c;
+for a;

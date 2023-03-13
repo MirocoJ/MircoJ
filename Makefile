@@ -4,8 +4,8 @@ OCAMLLEX = ocamllex
 
 all: o
 
-o: ast.cmo parser.cmo scanner.cmo p.cmo
-	$(OCAMLC) -o o ast.cmo parser.cmo scanner.cmo p.cmo
+o: ast.cmo parser.cmo scanner.cmo semant.cmo sast.cmo toplevel.cmo
+	$(OCAMLC) -o o ast.cmo parser.cmo scanner.cmo semant.cmo sast.cmo toplevel.cmo
 
 ast.cmo: ast.ml
 	$(OCAMLC) -c ast.ml
@@ -23,8 +23,14 @@ scanner.cmo: scanner.ml parser.cmi
 scanner.ml: scanner.mll
 	$(OCAMLLEX) scanner.mll
 
-p.cmo: p.ml ast.cmo parser.cmo scanner.cmo
-	$(OCAMLC) -c p.ml
+semant.cmo: semant.ml ast.cmo sast.cmo
+	$(OCAMLC) -c semant.ml
+
+sast.cmo: sast.ml ast.cmo
+	$(OCAMLC) -c sast.ml
+
+toplevel.cmo: toplevel.ml ast.cmo parser.cmo scanner.cmo semant.cmo sast.cmo
+	$(OCAMLC) -c toplevel.ml
 
 clean:
 	rm -f *.cmo *.cmi parser.ml parser.mli scanner.ml o
